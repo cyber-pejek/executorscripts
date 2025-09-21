@@ -1,0 +1,195 @@
+-- Services
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+-- Usuwanie starego GUI
+if PlayerGui:FindFirstChild("DoggyExecutorGUI") then
+	PlayerGui.DoggyExecutorGUI:Destroy()
+end
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DoggyExecutorGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = PlayerGui
+
+-- Główne okno
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 520, 0, 380)
+mainFrame.Position = UDim2.new(0.5, -260, 0.5, -190)
+mainFrame.BackgroundColor3 = Color3.fromRGB(255, 240, 150)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 16)
+local stroke = Instance.new("UIStroke", mainFrame)
+stroke.Thickness = 3
+stroke.Color = Color3.fromRGB(180, 140, 60)
+
+-- Pasek tytułu
+local titleBar = Instance.new("Frame", mainFrame)
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(240, 220, 100)
+titleBar.BorderSizePixel = 0
+Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 16)
+
+local titleLabel = Instance.new("TextLabel", titleBar)
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Doggy Executor 🍌"
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(90, 60, 20)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Zamknij
+local closeBtn = Instance.new("TextButton", titleBar)
+closeBtn.Size = UDim2.new(0, 60, 0, 28)
+closeBtn.Position = UDim2.new(1, -70, 0.5, -14)
+closeBtn.Text = "✖"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 20
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 80, 80)
+closeBtn.BorderSizePixel = 0
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
+closeBtn.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+-- TextBox na kod
+local textBox = Instance.new("TextBox", mainFrame)
+textBox.Size = UDim2.new(1, -240, 1, -120)
+textBox.Position = UDim2.new(0, 20, 0, 60)
+textBox.MultiLine = true
+textBox.ClearTextOnFocus = false
+textBox.Text = "-- Wpisz tutaj kod"
+textBox.TextXAlignment = Enum.TextXAlignment.Left
+textBox.TextYAlignment = Enum.TextYAlignment.Top
+textBox.TextSize = 16
+textBox.Font = Enum.Font.Code
+textBox.TextColor3 = Color3.fromRGB(50, 40, 20)
+textBox.BackgroundColor3 = Color3.fromRGB(255, 250, 180)
+Instance.new("UICorner", textBox).CornerRadius = UDim.new(0, 10)
+local tbStroke = Instance.new("UIStroke", textBox)
+tbStroke.Color = Color3.fromRGB(200, 180, 100)
+tbStroke.Thickness = 2
+
+-- Przyciski Execute / Clear / Copy
+local buttonFrame = Instance.new("Frame", mainFrame)
+buttonFrame.Size = UDim2.new(1, -240, 0, 50)
+buttonFrame.Position = UDim2.new(0, 20, 1, -60)
+buttonFrame.BackgroundTransparency = 1
+
+local function createButton(text, xPos, callback)
+	local btn = Instance.new("TextButton", buttonFrame)
+	btn.Size = UDim2.new(0, 140, 1, 0)
+	btn.Position = UDim2.new(0, xPos, 0, 0)
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 18
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.BackgroundColor3 = Color3.fromRGB(180, 140, 60)
+	btn.BorderSizePixel = 0
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
+	btn.MouseButton1Click:Connect(callback)
+	return btn
+end
+
+createButton("▶ Execute", 0, function()
+	local scriptCode = textBox.Text
+	if loadstring then
+		local success, err = pcall(function()
+			loadstring(scriptCode)()
+		end)
+		if success then
+			print("✅ Kod wykonany!")
+		else
+			warn("❌ Błąd: "..tostring(err))
+		end
+	else
+		warn("⚠️ Loadstring nie jest wspierany w tym executorze.")
+	end
+end)
+
+createButton("🧹 Clear", 160, function()
+	textBox.Text = ""
+end)
+
+createButton("📋 Copy", 320, function()
+	if setclipboard then
+		setclipboard(textBox.Text)
+		print("📋 Skopiowano kod!")
+	else
+		warn("⚠️ Kopiowanie nie jest wspierane.")
+	end
+end)
+
+-- HUB FRAME 🍌
+local hubFrame = Instance.new("ScrollingFrame", mainFrame)
+hubFrame.Size = UDim2.new(0, 200, 1, -120)
+hubFrame.Position = UDim2.new(1, -210, 0, 60)
+hubFrame.BackgroundColor3 = Color3.fromRGB(255, 240, 150)
+hubFrame.BorderSizePixel = 0
+hubFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
+hubFrame.ScrollBarThickness = 8
+Instance.new("UIStroke", hubFrame).Color = Color3.fromRGB(180, 140, 60)
+
+local hubTitle = Instance.new("TextLabel", mainFrame)
+hubTitle.Size = UDim2.new(0, 200, 0, 30)
+hubTitle.Position = UDim2.new(1, -210, 0, 20)
+hubTitle.BackgroundTransparency = 1
+hubTitle.Text = "Scripts Hub 🍌"
+hubTitle.Font = Enum.Font.GothamBold
+hubTitle.TextSize = 18
+hubTitle.TextColor3 = Color3.fromRGB(90, 60, 20)
+
+local hubLayout = Instance.new("UIListLayout", hubFrame)
+hubLayout.SortOrder = Enum.SortOrder.LayoutOrder
+hubLayout.Padding = UDim.new(0, 6)
+
+local function addHubScript(name, code)
+	local btn = Instance.new("TextButton", hubFrame)
+	btn.Size = UDim2.new(1, -10, 0, 40)
+	btn.Position = UDim2.new(0, 5, 0, 0)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.TextColor3 = Color3.fromRGB(80, 40, 20)
+	btn.BackgroundColor3 = Color3.fromRGB(255, 230, 130)
+	btn.BorderSizePixel = 0
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+	btn.MouseButton1Click:Connect(function()
+		textBox.Text = code
+	end)
+end
+
+-- Dodaj pierwszy skrypt
+addHubScript("Ultimate Player Mod Menu", [[
+loadstring(game:HttpGet("https://raw.githubusercontent.com/cyber-pejek/executorscripts/refs/heads/main/UltimatePlayerModMenu.lua"))()
+]])
+
+-- Dragging GUI
+local dragging, dragStart, startPos
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+	end
+end)
+titleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+	end
+end)
