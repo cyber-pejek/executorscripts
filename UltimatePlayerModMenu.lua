@@ -158,6 +158,7 @@ speedBtn.MouseLeave:Connect(function()
 	}
 end)
 
+-- Speed button click
 speedBtn.MouseButton1Click:Connect(function()
 	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -216,7 +217,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		for k, feature in features do
 			local boundKey = binds[feature.key]
 			if boundKey and input.KeyCode == boundKey then
-				-- Toggle feature directly (fix: do not use Activate)
+				-- Toggle feature directly
 				if feature.key == "InfJump" then
 					toggles.InfJump = not toggles.InfJump
 					buttons.InfJump.BackgroundColor3 = toggles.InfJump and Color3.fromRGB(0,200,0) or Color3.fromRGB(50,50,50)
@@ -349,7 +350,7 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Trigger Bot (fires at player under mouse)
+-- Trigger Bot
 buttons.TriggerBot.MouseButton1Click:Connect(function()
 	toggles.TriggerBot = not toggles.TriggerBot
 	buttons.TriggerBot.BackgroundColor3 = toggles.TriggerBot and Color3.fromRGB(0,200,0) or Color3.fromRGB(50,50,50)
@@ -370,13 +371,12 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		local target = mouse.Target
 		local player = getPlayerFromPart(target)
 		if player then
-			-- Simulate "trigger" (for demonstration, print to output)
 			print("TriggerBot: Fired at", player.Name)
 		end
 	end
 end)
 
--- Aim Bot (aims at nearest player)
+-- Aim Bot
 buttons.AimBot.MouseButton1Click:Connect(function()
 	toggles.AimBot = not toggles.AimBot
 	buttons.AimBot.BackgroundColor3 = toggles.AimBot and Color3.fromRGB(0,200,0) or Color3.fromRGB(50,50,50)
@@ -406,13 +406,13 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Killaura (attack nearby players)
+-- Killaura
 buttons.Killaura.MouseButton1Click:Connect(function()
 	toggles.Killaura = not toggles.Killaura
 	buttons.Killaura.BackgroundColor3 = toggles.Killaura and Color3.fromRGB(0,200,0) or Color3.fromRGB(50,50,50)
 end)
 
-local killauraRadius = 10 -- studs
+local killauraRadius = 10
 
 RunService.RenderStepped:Connect(function()
 	if toggles.Killaura then
@@ -424,10 +424,7 @@ RunService.RenderStepped:Connect(function()
 					local targetPos = player.Character.HumanoidRootPart.Position
 					local dist = (targetPos - myPos).Magnitude
 					if dist <= killauraRadius then
-						-- Simulate attack (for demonstration, print to output)
 						print("Killaura: Attacked", player.Name)
-						-- If you want to actually damage, you need a RemoteEvent to the server
-						-- player.Character:FindFirstChildOfClass("Humanoid").Health = 0 -- Only works on server
 					end
 				end
 			end
@@ -435,7 +432,7 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Others (placeholder)
+-- Others
 buttons.Others.MouseButton1Click:Connect(function()
 	StarterGui:SetCore("SendNotification", {
 		Title = "Others",
@@ -444,3 +441,52 @@ buttons.Others.MouseButton1Click:Connect(function()
 	})
 end)
 
+-- ======= DODANE: Keybind Speed =======
+
+toggles.Speed = false
+local normalWalkSpeed = 16
+local speedAmount = 200
+
+local speedBindBtn = Instance.new("TextButton")
+speedBindBtn.Name = "SpeedBindBtn"
+speedBindBtn.Text = "Bind Key"
+speedBindBtn.Size = UDim2.new(1, -20, 0, buttonHeight)
+speedBindBtn.Position = UDim2.new(0, 10, 0, 50 + (#features+1)*(buttonHeight+buttonSpacing))
+speedBindBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+speedBindBtn.TextColor3 = Color3.fromRGB(255,255,0)
+speedBindBtn.Font = Enum.Font.Gotham
+speedBindBtn.TextSize = 18
+speedBindBtn.Parent = frame
+bindButtons.Speed = speedBindBtn
+
+local waitingForSpeedBind = false
+local speedKey = nil
+
+speedBindBtn.MouseButton1Click:Connect(function()
+	if waitingForSpeedBind then return end
+	waitingForSpeedBind = true
+	speedBindBtn.Text = "Press Key..."
+	speedBindBtn.BackgroundColor3 = Color3.fromRGB(255,150,0)
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	if waitingForSpeedBind then
+		if input.UserInputType == Enum.UserInputType.Keyboard then
+			speedKey = input.KeyCode
+			speedBindBtn.Text = "Key: "..tostring(speedKey):gsub("Enum.KeyCode.", "")
+			speedBindBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+			waitingForSpeedBind = false
+		end
+		return
+	end
+
+	if speedKey and input.KeyCode == speedKey then
+		toggles.Speed = not toggles.Speed
+		local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = toggles.Speed and speedAmount or normalWalkSpeed
+		end
+		speedBindBtn.BackgroundColor3 = toggles.Speed and Color3.fromRGB(0,200,0) or Color3.fromRGB(80,80,80)
+	end
+end)
